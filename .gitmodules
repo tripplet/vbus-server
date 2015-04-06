@@ -1,0 +1,6 @@
+[submodule "jsoncpp"]
+	path = jsoncpp
+	url = git@github.com:open-source-parsers/jsoncpp.git
+[submodule "SQLiteCpp"]
+	path = SQLiteCpp
+	url = https://github.com/SRombauts/SQLiteCpp
