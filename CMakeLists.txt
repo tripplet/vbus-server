@@ -7,6 +7,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 include_directories(jsoncpp/dist/)
 set(SOURCES jsoncpp/dist/jsoncpp.cpp)
 
+# Disable some unused SQLiteCpp targets
+SET(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
+SET(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Run cppcheck C++ static analysis tool.")
+SET(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ StyleGuide.")
+
 # Add SQLiteCpp
 include_directories(SQLiteCpp/include/)
 add_subdirectory(SQLiteCpp)
