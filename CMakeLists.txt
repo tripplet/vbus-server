@@ -4,8 +4,8 @@ PROJECT(vbus-server)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Add jsoncpp
-include_directories(jsoncpp/dist/)
-set(SOURCES jsoncpp/dist/jsoncpp.cpp)
+#include_directories(jsoncpp/dist/)
+#set(SOURCES jsoncpp/dist/jsoncpp.cpp)
 
 # Disable some unused SQLiteCpp targets
 SET(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
