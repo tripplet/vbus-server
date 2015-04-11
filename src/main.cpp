@@ -6,7 +6,8 @@
 
 int main(int argc, char const *argv[])
 {
-  std::cout << "Content-type:application/json\r\n\r\n";
+  std::cout << "Content-type:text/comma-separated-values\r\n"
+            << "Access-Control-Allow-Origin: *'\r\n\r\n";
 
   try {
     SQLite::Database db(DB_PATH);
@@ -28,32 +29,19 @@ int main(int argc, char const *argv[])
 
     query.bind(1, time_query);
 
-    std::cout << "{\"data\":[";
-
-    bool first = true;
+    std::cout << "Datum,Ofen,Speicher (unten),Speicher (oben), Heizung, Ventil-Ofen, Ventil-Heizung" << std::endl;
 
     while (query.executeStep()) {
-      if (!first) {
-        std::cout << ",";
-      }
-      else {
-        first = false;
-      }
-
-      std::cout << "["
-                << "\"" << query.getColumn(0).getText()   << "\","
+      std::cout << "\"" << query.getColumn(0).getText()   << "\","
                         << query.getColumn(1).getDouble() << ","
                         << query.getColumn(2).getDouble() << ","
                         << query.getColumn(3).getDouble() << ","
                         << query.getColumn(4).getDouble() << ","
                         << query.getColumn(5).getInt()    << ","
-                        << query.getColumn(6).getInt()    << "]";
+                        << query.getColumn(6).getInt()    << std::endl;
     }
-
-    std::cout << "]}";
   }
   catch (std::exception& e) {
-      std::cout << "{ \"error\": \"SQLite exception: " << e.what() << "\" }" << std::endl;
       return 1;
   }
 
