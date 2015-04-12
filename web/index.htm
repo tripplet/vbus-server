@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.0/dygraph-combined.js"></script>
+  <style type="text/css">
+    #main_graph {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 40px;
+      bottom: 10px;
+    }
+   </style>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      new Dygraph(
+        document.getElementById("main_graph"),
+        "vbus-server?-24%20hours",
+        {
+          axes : { x : { valueFormatter : Dygraph.dateString_ } },
+          series : {
+            'Ventil-Heizung' : {
+              fillGraph: true,
+              strokeWidth: 0.0
+            },
+            'Ventil-Ofen' : {
+              fillGraph: true,
+              strokeWidth: 0.0
+            }
+          },
+          delimiter: ',',
+          visibility: [true, true, true, true, true, true],
+          colors: ['#CF252B', '#7B9F35', '#2D882D', '#2E71B0'],
+          strokeWidth: 2.2,
+          rollPeriod: 3,
+          valueRange: [15, 71],
+          legend: 'always'
+        }
+      );
+    });
+  </script>
+</head>
+  <title>Heizung</title>
+</head>
+<body>
+<div id="main_graph"></div>
+</body>
+</html>
