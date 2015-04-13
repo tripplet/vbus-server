@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.0/dygraph-combined.js"></script>
+  <script src="jquery-2.1.3.min.js"></script>
+  <script src="dygraph-combined.js"></script>
   <style type="text/css">
     #main_graph {
       position: absolute;
@@ -17,9 +17,9 @@
     $(document).ready(function () {
       new Dygraph(
         document.getElementById("main_graph"),
-        "vbus-server?-24%20hours",
+        "vbus-server?-24 hours",
         {
-          axes : { x : { valueFormatter : Dygraph.dateString_ } },
+          // axes : { x : { valueFormatter : Dygraph.dateString_ } },
           series : {
             'Ventil-Heizung' : {
               fillGraph: true,
