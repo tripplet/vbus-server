@@ -1,4 +1,5 @@
 #include <iostream>
+#include <locale>
 #include <cstdlib>
 #include <string>
 #include <algorithm>
@@ -15,10 +16,17 @@ void find_and_replace(std::string& source, std::string const& find, std::string 
   }
 }
 
+// See: http://stackoverflow.com/questions/15220861/how-can-i-set-the-comma-to-be-a-decimal-point
+class punct_facet: public std::numpunct<char> {
+  protected: char do_decimal_point() const { return '.'; }
+};
 
 int main(int argc, char const *argv[])
 {
-  std::cout << "Content-type:text/comma-separated-values\r\n"
+  // Set decimal seperator to '.'
+  std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
+  
+  std::cout << "Content-type: text/comma-separated-values\r\n"
             << "Access-Control-Allow-Origin: *\r\n\r\n";
 
   try {
