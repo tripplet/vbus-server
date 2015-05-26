@@ -27,6 +27,9 @@ int main(int argc, char const *argv[])
   std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
   
   std::cout << "Content-type: text/comma-separated-values\r\n"
+            << "Cache-Control: no-cache, no-store, must-revalidate\r\n"
+            << "Pragma: no-cache\r\n"
+            << "Expires: 0\r\n"
             << "Access-Control-Allow-Origin: *\r\n\r\n";
 
   try {
