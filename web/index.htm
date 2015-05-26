@@ -14,10 +14,23 @@
     }
    </style>
   <script type="text/javascript">
+    $.urlParam = function(name){
+      var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+      
+      if (results==null) { return null;            }
+      else               { return results[1] || 0; } 
+    }
+
     $(document).ready(function () {
+      view_timespan = $.urlParam('timespan');
+
+      if (view_timespan==null) {
+        view_timespan = "-24 hours";
+      }
+
       new Dygraph(
         document.getElementById("main_graph"),
-        "vbus-server?-24 hours",
+        "vbus-server?" + view_timespan,
         {
           // axes : { x : { valueFormatter : Dygraph.dateString_ } },
           series : {
@@ -36,7 +49,8 @@
           strokeWidth: 2.2,
           rollPeriod: 3,
           valueRange: [15, 76],
-          legend: 'always'
+          legend: 'always',
+	  labelsDivWidth: 400
         }
       );
     });
