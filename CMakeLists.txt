@@ -24,5 +24,5 @@ add_subdirectory(src)
 
 add_executable(vbus-server ${SOURCES})
 
-target_link_libraries(vbus-server sqlite3 SQLiteCpp)
+target_link_libraries(vbus-server SQLiteCpp sqlite3)
 add_dependencies(vbus-server SQLiteCpp)
