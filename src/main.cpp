@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <SQLiteCpp/SQLiteCpp.h>
 
-#define DB_PATH "/srv/http/vbus-data.db"
+#define DB_PATH "/srv/http/data/vbus.sqlite"
 
 void find_and_replace(std::string& source, std::string const& find, std::string const& replace)
 {
