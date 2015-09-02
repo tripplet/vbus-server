@@ -43,8 +43,8 @@ $ ln -s ../build/vbus-server
 ## Configure lighttpd or any other webserver with cgi support
 
 #### :warning: Warning
-This is a very basic setting without authentication and https (only for internal home network).
-It should not be made accessible from the internet
+> This is a very basic setting without authentication and https (only for internal home network).
+> It should not be made accessible from the internet
 
 
 Install lighttpd (raspbian)
