@@ -36,8 +36,7 @@ $ mkdir -p /opt/vbus/server/build
 $ cd /opt/vbus/server/build
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
 $ make
-$ cd ../web
-$ ln -s ../build/vbus-server
+$ ln -s /opt/vbus/server/build/vbus-server /opt/vbus/server/web/
 ```
 
 ## Configure lighttpd or any other webserver with cgi support
