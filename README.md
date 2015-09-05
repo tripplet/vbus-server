@@ -66,6 +66,11 @@ $ ln -s /opt/vbus/collector/data.db /srv/http/data/vbus.sqlite
 $ ln -s /opt/vbus/server/web /srv/http/htdocs/heating
 ```
 
+On raspbian the lighttpd user is `www-data`
+```
+$ chown -R www-data:www-data /srv/http
+```
+
 Example lighttpd config
 ```cfg
 # lighttpd config
@@ -74,8 +79,8 @@ var.config_dir  = "/etc/lighttpd/"
 var.server_root = "/srv/http/"
 
 server.port = 80
-server.username  = "http"
-server.groupname = "http"
+server.username  = "http" # Use www-data on raspbian
+server.groupname = "http" # Use www-data on raspbian
 server.document-root = server_root + "htdocs"
 server.errorlog      = "/var/log/lighttpd/error.log"
 
