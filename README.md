@@ -101,7 +101,7 @@ server.modules += ( "mod_cgi" )
 cgi.assign        = ( "/vbus-server" => "" )
 ```
 
-Enable and start the lighttpd server
+Enable and start the lighttpd server (only works with installed systemd)
 ```shell
 $ systemctl enable lighttpd
 $ systemctl start lighttpd
