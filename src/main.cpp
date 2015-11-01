@@ -10,6 +10,19 @@
 
 #define DB_PATH "/srv/http/data/vbus.sqlite"
 
+#define SELECT_TIMESPAN "SELECT " \
+                        "datetime(time, 'localtime') as time, " \
+                        "temp1, temp2, temp3, temp4, pump1, pump2 " \
+                        "FROM data " \
+                        "WHERE time > (SELECT DATETIME('now', ?)) " \
+                        "ORDER BY id"
+
+#define SELECT_SINGLE "SELECT " \
+                      "datetime(time, 'localtime') as time, " \
+                      "temp1, temp2, temp3, temp4, pump1, pump2 " \
+                      "FROM data " \
+                      "ORDER BY id DESC LIMIT 1"
+
 typedef std::unordered_map<std::string, std::string> parameterMap;
 
 parameterMap* parseURL(const std::string& url);
@@ -64,15 +77,16 @@ int main(int argc, char const *argv[])
     if (requestParameter->count("timespan") == 0) { (*requestParameter)["timespan"] = "-1 hour"; }
     if (requestParameter->count("format") == 0)   { (*requestParameter)["format"] = "csv"; }
 
-    SQLite::Statement query(db, "SELECT "
-                                "datetime(time, 'localtime') as time, "
-                                "temp1, temp2, temp3, temp4, pump1, pump2 "
-                                "FROM data "
-                                "WHERE time > (SELECT DATETIME('now', ?)) "
-                                "ORDER BY id");
+    std::unique_ptr<SQLite::Statement> query;
 
-    query.bind(1, (*requestParameter)["timespan"]);
-
+    if ((*requestParameter)["timespan"] == "single")
+    {
+      query.reset(new SQLite::Statement(db, SELECT_SINGLE));
+    }
+    else {
+      query.reset(new SQLite::Statement(db, SELECT_TIMESPAN));
+      query->bind(1, (*requestParameter)["timespan"]);
+    }
 
     if ((*requestParameter)["format"] == "csv")
     {
@@ -84,18 +98,18 @@ int main(int argc, char const *argv[])
     }
 
     bool isFirstRow = true;
-    
-    while (query.executeStep())
+
+    while (query->executeStep())
     {
       if ((*requestParameter)["format"] == "csv")
       {
-        printCsvResult(query, std::cout, isFirstRow);
+        printCsvResult(*query, std::cout, isFirstRow);
       }
       else if ((*requestParameter)["format"] == "json")
       {
-        printJsonResult(query, std::cout, isFirstRow);
+        printJsonResult(*query, std::cout, isFirstRow);
       }
-      
+
       isFirstRow = false;
     }
 
@@ -103,7 +117,7 @@ int main(int argc, char const *argv[])
     {
       std::cout << std::endl<< "] }" << std::endl;
     }
-    
+
   }
   catch (std::exception& e)
   {
@@ -131,7 +145,7 @@ void printJsonResult(SQLite::Statement& query, std::ostream& stream, bool isFirs
   if (!isFirstRow) {
     stream << "," << std::endl;
   }
-  
+
   stream << "{ \"timestamp\": \"" << query.getColumn(0).getText() << "\" ,"
          << "\"temp1\": "         << query.getColumn(1).getDouble()     << ","
          << "\"temp2\": "         << query.getColumn(2).getDouble()     << ","
