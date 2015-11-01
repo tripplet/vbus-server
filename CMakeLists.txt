@@ -17,12 +17,22 @@ SET(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ Sty
 
 # Add SQLiteCpp
 include_directories(SQLiteCpp/include/)
+include_directories(uriparser/include/)
+
 add_subdirectory(SQLiteCpp)
+
+#ExternalProject_Add(uriparser
+#  PREFIX uriparser
+#  BUILD_COMMAND "./autogen.sh && ./configure --disable-test --disable-doc")
+
+# Add uriparser library (ensure static version is linked)
+ADD_LIBRARY(uriparser STATIC IMPORTED)
+SET_TARGET_PROPERTIES(uriparser PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/uriparser/.libs/liburiparser.a)
 
 # Add src code directory
 add_subdirectory(src)
 
 add_executable(vbus-server ${SOURCES})
 
-target_link_libraries(vbus-server SQLiteCpp sqlite3)
+target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser)
 add_dependencies(vbus-server SQLiteCpp)
