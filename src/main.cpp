@@ -41,14 +41,26 @@ int main(int argc, char const *argv[])
             << "Expires: 0\r\n"
             << "Access-Control-Allow-Origin: *\r\n\r\n";
 
+  std::unique_ptr<parameterMap> requestParameter;
+    
   try
   {
     SQLite::Database db(DB_PATH);
-    std::unique_ptr<parameterMap> requestParameter(parseURL(std::getenv("REQUEST_URI")));
+    
+    auto request_uri = std::getenv("REQUEST_URI");
+    
+    if (request_uri != nullptr)
+    {
+      requestParameter.reset(parseURL(std::string(request_uri)));
+    }
+    else {
+      requestParameter.reset(new parameterMap());
+    }
+      
 
     if (requestParameter->count("timespan") == 0)
     {
-      requestParameter->at("timespan") = "-1 hour";
+      (*requestParameter)["timespan"] = "-1 hour";
     }
 
     SQLite::Statement query(db, "SELECT "
@@ -78,8 +90,7 @@ int main(int argc, char const *argv[])
       std::cerr << e.what() << std::endl;
       return 1;
   }
-
-  /* code */
+  
   return 0;
 }
 
@@ -105,7 +116,7 @@ parameterMap* parseURL(const std::string& url)
       
     do
     {
-      if (queryList->value != NULL) {
+      if (queryList->value != nullptr) {
         (*parameter)[queryList->key] = queryList->value;
       }
       else {
@@ -113,7 +124,7 @@ parameterMap* parseURL(const std::string& url)
       }
       
       current = queryList->next;
-    } while (current != NULL);
+    } while (current != nullptr);
       
     uriFreeQueryListA(queryList);
     uriFreeUriMembersA(&uri);
