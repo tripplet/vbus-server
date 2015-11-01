@@ -62,9 +62,10 @@ int main(int argc, char const *argv[])
   try
   {
     SQLite::Database db(DB_PATH);
-    
+    db.setBusyTimeout(3000);
+
     auto request_uri = std::getenv("REQUEST_URI");
-    
+
     if (request_uri != nullptr)
     {
       requestParameter.reset(parseURL(std::string(request_uri)));
