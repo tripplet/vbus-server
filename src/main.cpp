@@ -49,34 +49,42 @@ int main(int argc, char const *argv[])
 {
   // Set decimal seperator to '.'
   std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
-
+  
+  auto request_uri = std::getenv("REQUEST_URI");
+  //auto request_uri = "/vbus-server?timespan=single&format=json";
+  std::unique_ptr<parameterMap> requestParameter;
+  
+  if (request_uri != nullptr)
+  {
+    requestParameter.reset(parseURL(std::string(request_uri)));
+  }
+  else {
+    requestParameter.reset(new parameterMap());
+  }
+  
+  // Set default parameter
+  if (requestParameter->count("timespan") == 0) { (*requestParameter)["timespan"] = "-1 hour"; }
+  if (requestParameter->count("format") == 0)   { (*requestParameter)["format"] = "csv"; }
+  
   // Print HTTP header
-  std::cout << "Content-type: text/comma-separated-values\r\n"
-            << "Cache-Control: no-cache, no-store, must-revalidate\r\n"
+  if ((*requestParameter)["format"] == "csv")
+  {
+    std::cout << "Content-type: text/comma-separated-values\r\n";
+  }
+  else if ((*requestParameter)["format"] == "json")
+  {
+    std::cout << "Content-type: application/json\r\n";
+  }
+  
+  std::cout << "Cache-Control: no-cache, no-store, must-revalidate\r\n"
             << "Pragma: no-cache\r\n"
             << "Expires: 0\r\n"
             << "Access-Control-Allow-Origin: *\r\n\r\n";
-
-  std::unique_ptr<parameterMap> requestParameter;
 
   try
   {
     SQLite::Database db(DB_PATH);
     db.setBusyTimeout(3000);
-
-    auto request_uri = std::getenv("REQUEST_URI");
-
-    if (request_uri != nullptr)
-    {
-      requestParameter.reset(parseURL(std::string(request_uri)));
-    }
-    else {
-      requestParameter.reset(new parameterMap());
-    }
-
-    // Set default parameter
-    if (requestParameter->count("timespan") == 0) { (*requestParameter)["timespan"] = "-1 hour"; }
-    if (requestParameter->count("format") == 0)   { (*requestParameter)["format"] = "csv"; }
 
     std::unique_ptr<SQLite::Statement> query;
 
