@@ -30,6 +30,7 @@ ExternalProject_Add(liburiparser
   BINARY_DIR ${CMAKE_SOURCE_DIR}/uriparser
   CONFIGURE_COMMAND ./autogen.sh && ./configure --disable-test --disable-doc
   BUILD_COMMAND make
+  INSTALL_COMMAND ""
 )
 
 # Add uriparser library (ensure static version is linked)
