@@ -25,7 +25,7 @@
       view_timespan = $.urlParam('timespan');
 
       if (view_timespan==null) {
-        view_timespan = "-48 hours";
+        view_timespan = "-24 hours";
       }
 
       new Dygraph(
@@ -55,10 +55,9 @@
       );
     });
   </script>
-</head>
   <title>Heizung</title>
 </head>
 <body>
-<div id="main_graph"></div>
+<div id="main_graph">Loading...</div>
 </body>
 </html>
