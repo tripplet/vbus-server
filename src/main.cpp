@@ -155,13 +155,13 @@ void printJsonResult(SQLite::Statement& query, std::ostream& stream, bool isFirs
     stream << "," << std::endl;
   }
 
-  stream << "{ \"timestamp\": \"" << query.getColumn(0).getText() << "\" ,"
-         << "\"temp1\": "         << query.getColumn(1).getDouble()     << ","
-         << "\"temp2\": "         << query.getColumn(2).getDouble()     << ","
-         << "\"temp3\": "         << query.getColumn(3).getDouble()     << ","
-         << "\"temp4\": "         << query.getColumn(4).getDouble()     << ","
-         << "\"valve1\": "        << query.getColumn(5).getInt()        << ","
-         << "\"valve2\": "        << query.getColumn(6).getInt()        << "}";
+  stream << "{\"timestamp\":\"" << query.getColumn(0).getText() << "\","
+         << "\"temp1\":"        << query.getColumn(1).getDouble()     << ","
+         << "\"temp2\":"        << query.getColumn(2).getDouble()     << ","
+         << "\"temp3\":"        << query.getColumn(3).getDouble()     << ","
+         << "\"temp4\":"        << query.getColumn(4).getDouble()     << ","
+         << "\"valve1\":"       << query.getColumn(5).getInt()        << ","
+         << "\"valve2\":"       << query.getColumn(6).getInt()        << "}";
 }
 
 parameterMap* parseURL(const std::string& url)
