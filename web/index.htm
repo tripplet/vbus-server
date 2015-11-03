@@ -25,12 +25,12 @@
       view_timespan = $.urlParam('timespan');
 
       if (view_timespan==null) {
-        view_timespan = "-48 hours";
+        view_timespan = "-24 hours";
       }
 
       new Dygraph(
         document.getElementById("main_graph"),
-        "vbus-server?" + view_timespan,
+        "vbus-server?format=csv&timespan=" + view_timespan,
         {
           // axes : { x : { valueFormatter : Dygraph.dateString_ } },
           series : {
@@ -55,10 +55,9 @@
       );
     });
   </script>
-</head>
   <title>Heizung</title>
 </head>
 <body>
-<div id="main_graph"></div>
+<div id="main_graph">Loading...</div>
 </body>
 </html>

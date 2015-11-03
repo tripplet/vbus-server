@@ -4,3 +4,6 @@
 [submodule "SQLiteCpp"]
 	path = SQLiteCpp
 	url = https://github.com/SRombauts/SQLiteCpp
+[submodule "uriparser"]
+	path = uriparser
+	url = git://git.code.sf.net/p/uriparser/git
