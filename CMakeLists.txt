@@ -1,4 +1,6 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+include(ExternalProject)
+
 PROJECT(vbus-server)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -22,9 +24,13 @@ include_directories(uriparser/include/)
 
 add_subdirectory(SQLiteCpp)
 
-#ExternalProject_Add(uriparser
-#  PREFIX uriparser
-#  BUILD_COMMAND "./autogen.sh && ./configure --disable-test --disable-doc")
+ExternalProject_Add(liburiparser
+  PREFIX ${CMAKE_SOURCE_DIR}/uriparser
+  SOURCE_DIR ${CMAKE_SOURCE_DIR}/uriparser
+  BINARY_DIR ${CMAKE_SOURCE_DIR}/uriparser
+  CONFIGURE_COMMAND ./autogen.sh && ./configure --disable-test --disable-doc
+  BUILD_COMMAND make
+)
 
 # Add uriparser library (ensure static version is linked)
 ADD_LIBRARY(uriparser STATIC IMPORTED)
