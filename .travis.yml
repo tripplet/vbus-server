@@ -1,2 +1,4 @@
 language: cpp
-script: cmake . && make
+script: 
+  - cmake .
+  - make
