@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include <algorithm>
+#include <memory>
 #include <unordered_map>
 
 #include <uriparser/Uri.h>
