@@ -5,6 +5,10 @@
 
 Data capturing is done by [vbus-collector](https://github.com/tripplet/vbus-collector)
 
+## Used libraries
+* [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
+* [uriparser](http://uriparser.sourceforge.net/)
+
 ## HowTo
 The RaspberryPi or other linux machine should be running and connected to the internet, ssh sould be available.
 Also vbus-collector should be running.
