@@ -2,7 +2,11 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="jquery-2.1.3.min.js"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="viewport" content="initial-scale = 1.0, user-scalable = no"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" size="152x152"/>
+  <script src="jquery-2.2.0.min.js"></script>
   <script src="dygraph-combined.js"></script>
   <style type="text/css">
     #main_graph {
@@ -12,13 +16,13 @@
       top: 40px;
       bottom: 10px;
     }
-   </style>
+  </style>
   <script type="text/javascript">
     $.urlParam = function(name){
       var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-      
+
       if (results==null) { return null;            }
-      else               { return results[1] || 0; } 
+      else               { return results[1] || 0; }
     }
 
     $(document).ready(function () {
