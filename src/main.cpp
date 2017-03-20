@@ -16,7 +16,7 @@
                         "temp1, temp2, temp3, temp4, pump1, pump2 " \
                         "FROM data " \
                         "WHERE time > (SELECT DATETIME('now', ?)) " \
-                        "ORDER BY id"
+                        "ORDER BY time"
 
 #define SELECT_SINGLE "SELECT " \
                       "datetime(time, 'localtime') as time, " \
