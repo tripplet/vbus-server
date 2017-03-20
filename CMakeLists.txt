@@ -3,8 +3,9 @@ include(ExternalProject)
 
 PROJECT(vbus-server)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_STANDARD 11)
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -43,4 +44,4 @@ add_subdirectory(src)
 add_executable(vbus-server ${SOURCES})
 
 target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser)
-add_dependencies(vbus-server SQLiteCpp)
+add_dependencies(vbus-server SQLiteCpp liburiparser)
