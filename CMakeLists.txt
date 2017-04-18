@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s")
 
+# Put result binary in topmost directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Disable some unused SQLiteCpp targets
@@ -20,6 +21,7 @@ include_directories(SQLiteCpp/include/)
 include_directories(uriparser/include/)
 
 add_subdirectory(SQLiteCpp)
+find_package(Threads REQUIRED)
 
 ExternalProject_Add(liburiparser
   PREFIX ${CMAKE_SOURCE_DIR}/uriparser
@@ -37,7 +39,9 @@ SET_TARGET_PROPERTIES(uriparser PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}
 # Add src code directory
 add_subdirectory(src)
 
-add_executable(vbus-server ${SOURCES})
 
-target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser)
+
+add_executable(vbus-server ${SOURCES})
+target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser Threads::Threads ${CMAKE_DL_LIBS})
 add_dependencies(vbus-server SQLiteCpp liburiparser)
+add_custom_command(TARGET vbus-server POST_BUILD COMMAND ln -sf "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/")
