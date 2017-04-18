@@ -1,5 +1,7 @@
 build/
 build_debug/
 
+web/vbus-server
+
 .DS_Store
 ._.DS_Store
