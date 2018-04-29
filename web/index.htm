@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" size="152x152"/>
   <script src="jquery-3.2.1.min.js"></script>
   <script src="dygraph.min.js"></script>
-  <link rel="stylesheet" src="dygraph.min.css"/>
+  <link rel="stylesheet" type="text/css" href="dygraph.min.css"/>
   <style type="text/css">
     #main_graph {
       position: absolute;
@@ -19,9 +19,10 @@
     }
     .dygraph-legend {
       background: white !important;
-      position: absolute  !important;
-      left: 60pt  !important;
-      top: 10pt  !important;
+      position: absolute !important;
+      left: 60pt !important;
+      top: 10pt !important;
+      width: auto !important;
     }
   </style>
   <script type="text/javascript">
@@ -36,7 +37,7 @@
       view_timespan = $.urlParam('timespan');
 
       if (view_timespan==null) {
-        view_timespan = "-24 hours";
+        view_timespan = "-48+hours";
       }
 
       new Dygraph(
@@ -63,9 +64,9 @@
           colors: ['#CF252B', '#7B9F35', '#2D882D', '#2E71B0'],
           strokeWidth: 2.2,
           rollPeriod: 3,
-          valueRange: [15, 70],
+          //valueRange: [15, 70],
           legend: 'always',
-	  labelsDivWidth: 400
+          labelsDivWidth: 400
         }
       );
     });
