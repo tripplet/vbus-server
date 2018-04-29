@@ -1,7 +1,7 @@
 build/
 build_debug/
 
-web/vbus-server
+web/vbus-server.cgi
 
 .DS_Store
 ._.DS_Store

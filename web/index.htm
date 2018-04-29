@@ -35,14 +35,19 @@
 
     $(document).ready(function () {
       view_timespan = $.urlParam('timespan');
+      view_start = $.urlParam('start');
 
       if (view_timespan==null) {
         view_timespan = "-48+hours";
       }
 
+      if (view_start==null) {
+        view_start = "now";
+      }
+
       new Dygraph(
         document.getElementById("main_graph"),
-        "vbus-server?format=csv&timespan=" + view_timespan,
+        "vbus-server.cgi?format=csv&clip=1&start=" + view_start +"&timespan=" + view_timespan,
         {
           // axes : { x : { valueFormatter : Dygraph.dateString_ } },
           series : {

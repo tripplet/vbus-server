@@ -5,16 +5,16 @@ PROJECT(vbus-server)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -flto")
 
 # Put result binary in topmost directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Disable some unused SQLiteCpp targets
-SET(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
-SET(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Run cppcheck C++ static analysis tool.")
-SET(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ StyleGuide.")
+set(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
+set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Run cppcheck C++ static analysis tool.")
+set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ StyleGuide.")
 
 # Add libraries
 include_directories(SQLiteCpp/include/)
@@ -44,4 +44,4 @@ add_subdirectory(src)
 add_executable(vbus-server ${SOURCES})
 target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser Threads::Threads ${CMAKE_DL_LIBS})
 add_dependencies(vbus-server SQLiteCpp liburiparser)
-add_custom_command(TARGET vbus-server POST_BUILD COMMAND ln -sf "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/")
+add_custom_command(TARGET vbus-server POST_BUILD COMMAND cp "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/vbus-server.cgi")
