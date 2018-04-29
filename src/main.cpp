@@ -1,207 +1,237 @@
 #include <iostream>
 #include <locale>
 #include <cstdlib>
-#include <string>
+#include <sstream>
 #include <algorithm>
 #include <memory>
-#include <unordered_map>
+#include <limits>
 
-#include <uriparser/Uri.h>
 #include <SQLiteCpp/SQLiteCpp.h>
+
+#include "httphandler.hpp"
 
 #define DB_PATH "/srv/http/data/vbus.sqlite"
 
-#define SELECT_TIMESPAN "SELECT " \
-                        "datetime(time, 'localtime') as time, " \
-                        "temp1, temp2, temp3, temp4, pump1, pump2 " \
-                        "FROM data " \
-                        "WHERE time > (SELECT DATETIME('now', ?)) " \
-                        "ORDER BY time"
+#define CSV_HEADER "Datum,Ofen,Speicher-unten,Speicher-oben,Heizung,Ventil-Ofen,Ventil-Heizung"
 
-#define SELECT_SINGLE "SELECT " \
-                      "datetime(time, 'localtime') as time, " \
-                      "temp1, temp2, temp3, temp4, pump1, pump2 " \
-                      "FROM data " \
-                      "ORDER BY id DESC LIMIT 1"
+#define SELECT_TIMESPAN "SELECT" \
+                        " datetime(time, 'localtime') as time," \
+                        " temp1, temp2, temp3, temp4, pump1, pump2" \
+                        " FROM data" \
+                        " WHERE time > (SELECT DATETIME('now', ?))" \
+                        " ORDER BY time"
 
-typedef std::unordered_map<std::string, std::string> parameterMap;
+#define SELECT_TIMESPAN_RANGE "SELECT" \
+                              " datetime(time, 'localtime') as time," \
+                              " temp1, temp2, temp3, temp4, pump1, pump2" \
+                              " FROM data" \
+                              " WHERE time > (SELECT DATETIME(?, 'utc')) AND time < (SELECT DATETIME(?, 'utc', ?))" \
+                              " ORDER BY time"
 
-parameterMap* parseURL(const std::string& url);
+#define SELECT_SINGLE "SELECT" \
+                      " datetime(time, 'localtime') as time," \
+                      " temp1, temp2, temp3, temp4, pump1, pump2" \
+                      " FROM data" \
+                      " ORDER BY id DESC LIMIT 1"
 
-void printCsvResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow);
+#define SELECT_CURRENT "SELECT" \
+                       " datetime(time, 'localtime') as time," \
+                       " temp1, temp2, temp3, temp4, pump1, pump2" \
+                       " FROM data" \
+                       " WHERE time > (SELECT DATETIME('now', '-5 minutes'))" \
+                       " ORDER BY id DESC LIMIT 1"
+
+
+void printCsvResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow, bool clip);
 void printJsonResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow);
-
-void find_and_replace(std::string& source, std::string const& find, std::string const& replace)
-{
-  for(std::string::size_type i = 0; (i = source.find(find, i)) != std::string::npos;)
-  {
-    source.replace(i, find.length(), replace);
-    i += replace.length();
-  }
-}
 
 // See: http://stackoverflow.com/questions/15220861/how-can-i-set-the-comma-to-be-a-decimal-point
 class punct_facet: public std::numpunct<char>
 {
-  protected: char do_decimal_point() const { return '.'; }
+protected:
+    char do_decimal_point() const {
+        return '.';
+    }
 };
 
 int main(int argc, char const *argv[])
 {
-  // Set decimal seperator to '.'
-  std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
-  
-  auto request_uri = std::getenv("REQUEST_URI");
-  //auto request_uri = "/vbus-server?timespan=single&format=json";
-  std::unique_ptr<parameterMap> requestParameter;
-  
-  if (request_uri != nullptr)
-  {
-    requestParameter.reset(parseURL(std::string(request_uri)));
-  }
-  else {
-    requestParameter.reset(new parameterMap());
-  }
-  
-  // Set default parameter
-  if (requestParameter->count("timespan") == 0) { (*requestParameter)["timespan"] = "-1 hour"; }
-  if (requestParameter->count("format") == 0)   { (*requestParameter)["format"] = "csv"; }
-  
-  // Print HTTP header
-  if ((*requestParameter)["format"] == "csv")
-  {
-    std::cout << "Content-type: text/comma-separated-values\r\n";
-  }
-  else if ((*requestParameter)["format"] == "json")
-  {
-    std::cout << "Content-type: application/json\r\n";
-  }
-  
-  std::cout << "Cache-Control: no-cache, no-store, must-revalidate\r\n"
-            << "Pragma: no-cache\r\n"
-            << "Expires: 0\r\n"
-            << "Access-Control-Allow-Origin: *\r\n\r\n";
+    // Set decimal seperator to '.'
+    std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
 
-  try
-  {
-    SQLite::Database db(DB_PATH);
-    db.setBusyTimeout(3000);
+    double minTemp[4];
+    double maxTemp[4];
+    std::fill_n(minTemp, 4,  std::numeric_limits<double>::infinity());
+    std::fill_n(maxTemp, 4, -std::numeric_limits<double>::infinity());
 
-    std::unique_ptr<SQLite::Statement> query;
+    // Get HTTP handler and set default paramter
+    HttpHandler http(std::getenv("HTTP_ACCEPT_ENCODING"), std::getenv("REQUEST_URI"), std::cout);
+    http.setDefault("timespan", "-1 hour");
+    http.setDefault("format", "csv");
+    http.setDefault("start", "now");
+    http.setDefault("clip", "0");
 
-    if ((*requestParameter)["timespan"] == "single")
+    // Print HTTP header
+    if (http.param("format") == "csv")
     {
-      query.reset(new SQLite::Statement(db, SELECT_SINGLE));
+        http.setContentType("text/comma-separated-values");
     }
-    else {
-      query.reset(new SQLite::Statement(db, SELECT_TIMESPAN));
-      query->bind(1, (*requestParameter)["timespan"]);
-    }
-
-    if ((*requestParameter)["format"] == "csv")
+    else if (http.param("format") == "json")
     {
-      std::cout << "Datum,Ofen,Speicher-unten,Speicher-oben,Heizung,Ventil-Ofen,Ventil-Heizung" << std::endl;
+        http.setContentType("application/json");
     }
-    else if ((*requestParameter)["format"] == "json")
+
+    http.sendHeader();
+    std::ostream* outputStream = http.getStream();
+
+    try
     {
-      std::cout << "{ \"data\": [" << std::endl;
+        SQLite::Database db(DB_PATH);
+        db.setBusyTimeout(3000);
+
+        // Build sqlite query
+        std::unique_ptr<SQLite::Statement> query;
+
+        if (http.param("timespan") == "single")
+        {
+            query.reset(new SQLite::Statement(db, SELECT_SINGLE));
+        }
+        else if (http.param("timespan") == "current")
+        {
+            query.reset(new SQLite::Statement(db, SELECT_CURRENT));
+
+        }
+        else
+        {
+            if (http.param("start") != "now")
+            {
+                query.reset(new SQLite::Statement(db, SELECT_TIMESPAN_RANGE));
+                query->bind(1, http.param("start"));
+                query->bind(2, http.param("start"));
+                query->bind(3, http.param("timespan"));
+            }
+            else
+            {
+                query.reset(new SQLite::Statement(db, SELECT_TIMESPAN));
+                query->bind(1, http.param("timespan"));
+            }
+        }
+
+        if (http.param("format") == "csv")
+        {
+            *outputStream << CSV_HEADER << std::endl;
+        }
+        else if (http.param("format") == "json")
+        {
+            *outputStream << "{\"data\":[" << std::endl;
+        }
+
+        bool isFirstRow = true;
+
+        while (query->executeStep())
+        {
+            if (http.param("format") == "csv")
+            {
+                printCsvResult(*query, *outputStream, isFirstRow, http.param("clip") == "1");
+            }
+            else if (http.param("format") == "json")
+            {
+                printJsonResult(*query, *outputStream, isFirstRow);
+            }
+
+            // Update min/max stats
+            for (int idx=0; idx<4; idx++)
+            {
+                minTemp[idx] = std::min(minTemp[idx], query->getColumn(idx+1).getDouble());
+                maxTemp[idx] = std::max(maxTemp[idx], query->getColumn(idx+1).getDouble());
+            }
+
+            http.process();
+
+            isFirstRow = false;
+        }
+
+        // Add min/max stats to json response
+        if (http.param("format") == "json")
+        {
+            if (http.param("timespan") == "single" || http.param("timespan") == "current")
+            {
+                *outputStream << std::endl << "]}" << std::endl;
+            }
+            else
+            {
+                *outputStream << std::endl << "]";
+
+                for (int idx=0; idx<4; idx++)
+                {
+                    *outputStream << ",\"temp" << idx+1 << "\": {\"min\": " << minTemp[idx] << ", \"max\": " << maxTemp[idx] << "}" << std::endl;
+                }
+
+                *outputStream << "}";
+            }
+
+            http.process();
+        }
+
+        http.flush();
     }
-
-    bool isFirstRow = true;
-
-    while (query->executeStep())
+    catch (std::exception& e)
     {
-      if ((*requestParameter)["format"] == "csv")
-      {
-        printCsvResult(*query, std::cout, isFirstRow);
-      }
-      else if ((*requestParameter)["format"] == "json")
-      {
-        printJsonResult(*query, std::cout, isFirstRow);
-      }
-
-      isFirstRow = false;
+        std::cerr << e.what() << std::endl;
+        return 1;
     }
 
-    if ((*requestParameter)["format"] == "json")
-    {
-      std::cout << std::endl<< "] }" << std::endl;
-    }
-
-  }
-  catch (std::exception& e)
-  {
-      std::cerr << e.what() << std::endl;
-      return 1;
-  }
-
-  return 0;
+    return 0;
 }
 
-
-void printCsvResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow)
+void printCsvResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow, bool clip)
 {
-  stream << query.getColumn(0).getText()   << ","
-         << query.getColumn(1).getDouble() << ","
-         << query.getColumn(2).getDouble() << ","
-         << query.getColumn(3).getDouble() << ","
-         << query.getColumn(4).getDouble() << ","
-         << query.getColumn(5).getInt()    << ","
-         << query.getColumn(6).getInt()    << std::endl;
+    stream << query.getColumn(0).getText()   << ","
+           << query.getColumn(1).getDouble() << ","
+           << query.getColumn(2).getDouble() << ","
+           << query.getColumn(3).getDouble() << ","
+           << query.getColumn(4).getDouble() << ",";
+
+    if (clip && query.getColumn(5).getDouble() > query.getColumn(1).getDouble())
+    {
+        stream << query.getColumn(1).getDouble() << ",";
+    }
+    else if (clip && query.getColumn(5).getInt() == 0)
+    {
+        stream << "NaN,";
+    }
+    else
+    {
+        stream << query.getColumn(5).getDouble() << ",";
+    }
+
+    if (clip && query.getColumn(6).getDouble() > query.getColumn(3).getDouble())
+    {
+        stream << query.getColumn(3).getDouble() << std::endl;
+    }
+    else if (clip && query.getColumn(6).getInt() == 0)
+    {
+        stream << "NaN" << std::endl;
+    }
+    else
+    {
+        stream << query.getColumn(6).getDouble() << std::endl;
+    }
 }
 
 void printJsonResult(SQLite::Statement& query, std::ostream& stream, bool isFirstRow)
 {
-  if (!isFirstRow) {
-    stream << "," << std::endl;
-  }
+    if (!isFirstRow) {
+        stream << "," << std::endl;
+    }
 
-  stream << "{\"timestamp\":\"" << query.getColumn(0).getText() << "\","
-         << "\"temp1\":"        << query.getColumn(1).getDouble()     << ","
-         << "\"temp2\":"        << query.getColumn(2).getDouble()     << ","
-         << "\"temp3\":"        << query.getColumn(3).getDouble()     << ","
-         << "\"temp4\":"        << query.getColumn(4).getDouble()     << ","
-         << "\"valve1\":"       << query.getColumn(5).getInt()        << ","
-         << "\"valve2\":"       << query.getColumn(6).getInt()        << "}";
+    stream << "{\"timestamp\":\"" << query.getColumn(0).getText()   << "\","
+           << "\"temp1\":"        << query.getColumn(1).getDouble() << ","
+           << "\"temp2\":"        << query.getColumn(2).getDouble() << ","
+           << "\"temp3\":"        << query.getColumn(3).getDouble() << ","
+           << "\"temp4\":"        << query.getColumn(4).getDouble() << ","
+           << "\"valve1\":"       << query.getColumn(5).getInt()    << ","
+           << "\"valve2\":"       << query.getColumn(6).getInt()    << "}";
 }
 
-parameterMap* parseURL(const std::string& url)
-{
-  UriParserStateA state;
-  UriUriA uri;
 
-  state.uri = &uri;
-  if (uriParseUriA(&state, url.c_str()) != URI_SUCCESS)
-  {
-    uriFreeUriMembersA(&uri);
-    return new std::unordered_map<std::string, std::string>();
-  }
-
-  UriQueryListA* queryList;
-  int itemCount;
-
-  if (uriDissectQueryMallocA(&queryList, &itemCount, uri.query.first, uri.query.afterLast) == URI_SUCCESS)
-  {
-    auto parameter = new parameterMap();
-    auto& current = queryList;
-
-    do
-    {
-      if (queryList->value != nullptr) {
-        (*parameter)[queryList->key] = queryList->value;
-      }
-      else {
-        (*parameter)[queryList->key] = std::string("");
-      }
-
-      current = queryList->next;
-    } while (current != nullptr);
-
-    uriFreeQueryListA(queryList);
-    uriFreeUriMembersA(&uri);
-
-    return parameter;
-  }
-
-  return new std::unordered_map<std::string, std::string>();
-}

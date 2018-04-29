@@ -16,11 +16,16 @@ set(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
 set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Run cppcheck C++ static analysis tool.")
 set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ StyleGuide.")
 
+set(BROTLI_BUNDLED_MODE ON)
+set(BROTLI_DISABLE_TESTS)
+
 # Add libraries
 include_directories(SQLiteCpp/include/)
 include_directories(uriparser/include/)
+include_directories(brotli/c/include/)
 
 add_subdirectory(SQLiteCpp)
+add_subdirectory(brotli)
 find_package(Threads REQUIRED)
 
 ExternalProject_Add(liburiparser
@@ -39,9 +44,7 @@ SET_TARGET_PROPERTIES(uriparser PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}
 # Add src code directory
 add_subdirectory(src)
 
-
-
 add_executable(vbus-server ${SOURCES})
-target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser Threads::Threads ${CMAKE_DL_LIBS})
-add_dependencies(vbus-server SQLiteCpp liburiparser)
+target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser brotlienc-static brotlicommon-static Threads::Threads ${CMAKE_DL_LIBS})
+add_dependencies(vbus-server SQLiteCpp brotli liburiparser)
 add_custom_command(TARGET vbus-server POST_BUILD COMMAND cp "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/vbus-server.cgi")
