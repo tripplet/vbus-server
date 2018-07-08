@@ -122,8 +122,8 @@ By default the last 12 hours are rendered, if more history is desired change the
 ```url
 http://ip-of-your-raspberrypi/heating?timespan=TIME
 ```
-TIME should be the timespan of desired past data (remember whitespace should be encoded as `%20`.
+TIME should be the timespan of desired past data.
 
-Example: `http://ip-of-your-raspberrypi/heating?timespan=-5%20days`
+Example: `http://ip-of-your-raspberrypi/heating?timespan=-5 days`
 
 For a list of supported values see: https://www.sqlite.org/lang_datefunc.html
