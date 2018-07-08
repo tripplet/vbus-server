@@ -127,3 +127,37 @@ TIME should be the timespan of desired past data.
 Example: `http://ip-of-your-raspberrypi/heating?timespan=-5 days`
 
 For a list of supported values see: https://www.sqlite.org/lang_datefunc.html
+
+## Additional supported API requests
+* Format can be csv or json
+* ?timespan=current&format=json
+  ```
+  {"data":
+    [
+      {"timestamp":"2018-07-08 11:13:01", 
+        "temp1":21.9,
+        "temp2":20.9,
+        "temp3":23.1,
+        "temp4":27.1,
+        "valve1":0,
+        "valve2":0
+      }
+    ]
+  }
+  ```
+* ?start=2018-01-01&timespan=1 month&current&format=json
+  ```
+  {"data":[
+      {"timestamp":"2018-01-01 00:00:01", "temp1":79.6, "temp2":73.3, "temp3":77.5, "temp4":64, "valve1":100, "valve2":100},
+      {"timestamp":"2018-01-01 00:01:01", "temp1":79.5, "temp2":73.3,"temp3":77.6, "temp4":64, "valve1":100, "valve2":100},
+      ...
+      ...
+      {"timestamp":"2018-01-31 23:59:00", "temp1":74, "temp2":63.8, "temp3":73.3, "temp4":26.5, "valve1":100, "valve2":100}
+   ],
+   "temp1": {"min": 28.9, "max": 94.3},
+   "temp2": {"min": 24.3, "max": 85.7},
+   "temp3": {"min": 59.6, "max": 91.6},
+   "temp4": {"min": 17.9, "max": 74.4}
+  }
+  ```
+    
