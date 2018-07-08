@@ -31,7 +31,7 @@ Download the source code
 ```shell
 $ mkdir -p /opt/vbus
 $ cd /opt/vbus
-$ git clone --recursive https://github.com/tripplet/vbus-server.git server
+$ git clone --recurse-submodules https://github.com/tripplet/vbus-server.git server
 ```
 
 Compile the data visualization service
