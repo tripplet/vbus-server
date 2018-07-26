@@ -13,7 +13,10 @@ Data capturing is done by [vbus-collector](https://github.com/tripplet/vbus-coll
 * [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
 * [uriparser](http://uriparser.sourceforge.net/)
 
-## HowTo
+## Docker image
+https://hub.docker.com/r/ttobias/vbus-server/
+
+## HowTo build
 The RaspberryPi or other linux machine should be running and connected to the internet, ssh sould be available.
 Also vbus-collector should be running.
 
