@@ -13,6 +13,6 @@ RUN cd /src && cmake -DCMAKE_BUILD_TYPE=Release . && make -j && strip /src/vbus-
 
 #### Stage 2
 FROM ubuntu
-LABEL maintainer="Tobias Tanegmann"
+LABEL maintainer="Tobias Tangemann"
 COPY --from=0 /src/vbus-server /bin/vbus-server
 
