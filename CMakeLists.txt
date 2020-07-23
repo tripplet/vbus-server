@@ -12,12 +12,19 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -flto")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Disable some unused SQLiteCpp targets
-set(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "Run Doxygen C++ documentation tool.")
-set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "Run cppcheck C++ static analysis tool.")
-set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "Run cpplint.py tool for Google C++ StyleGuide.")
+set(SQLITECPP_RUN_DOXYGEN OFF CACHE BOOL "")
+set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "")
+set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "")
 
+# Brotli lib settings
 set(BROTLI_BUNDLED_MODE ON)
 set(BROTLI_DISABLE_TESTS)
+
+# uriparser lib settings
+SET(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+SET(URIPARSER_BUILD_DOCS OFF CACHE BOOL "")
+SET(URIPARSER_BUILD_TESTS OFF CACHE BOOL "")
+SET(URIPARSER_BUILD_TOOLS OFF CACHE BOOL "")
 
 # Add libraries
 include_directories(SQLiteCpp/include/)
@@ -25,26 +32,14 @@ include_directories(uriparser/include/)
 include_directories(brotli/c/include/)
 
 add_subdirectory(SQLiteCpp)
+add_subdirectory(uriparser)
 add_subdirectory(brotli)
 find_package(Threads REQUIRED)
-
-ExternalProject_Add(liburiparser
-  PREFIX ${CMAKE_SOURCE_DIR}/uriparser
-  SOURCE_DIR ${CMAKE_SOURCE_DIR}/uriparser
-  BINARY_DIR ${CMAKE_SOURCE_DIR}/uriparser
-  CONFIGURE_COMMAND ./autogen.sh && ./configure --disable-test --disable-doc
-  BUILD_COMMAND make
-  INSTALL_COMMAND ""
-)
-
-# Add uriparser library (ensure static version is linked)
-ADD_LIBRARY(uriparser STATIC IMPORTED)
-SET_TARGET_PROPERTIES(uriparser PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/uriparser/.libs/liburiparser.a)
 
 # Add src code directory
 add_subdirectory(src)
 
 add_executable(vbus-server ${SOURCES})
 target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser brotlienc-static brotlicommon-static Threads::Threads ${CMAKE_DL_LIBS})
-add_dependencies(vbus-server SQLiteCpp brotli liburiparser)
+add_dependencies(vbus-server SQLiteCpp brotli uriparser)
 add_custom_command(TARGET vbus-server POST_BUILD COMMAND cp "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/vbus-server.cgi")
