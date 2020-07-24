@@ -10,7 +10,9 @@
 
 #include "httphandler.hpp"
 
-#define DB_PATH "/srv/http/data/vbus.sqlite"
+#if !defined(DB_PATH)
+    #define DB_PATH "/srv/http/data/vbus.sqlite"
+#endif
 
 #define CSV_HEADER "Datum,Ofen,Speicher-unten,Speicher-oben,Heizung,Ventil-Ofen,Ventil-Heizung"
 
