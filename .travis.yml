@@ -7,7 +7,7 @@ install: if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 addons:
   apt:
     sources: [ubuntu-toolchain-r-test]
-    packages: [gcc-4.8, g++-4.8, clang]
+    packages: [gcc-4.8, g++-4.8, clang, zlib1g-dev]
 before_install:
   - wget -q https://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz --no-check-certificate
   - echo "0c6e1d1dedf58b21f6bd3de9f03ca435c3d13c4e709b1d67432ca12df07d8208  cmake-3.3.2-Linux-x86_64.tar.gz" | shasum -a256 -c -
