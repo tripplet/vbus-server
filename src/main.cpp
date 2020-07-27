@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
     }
 
     http.sendHeader();
-    std::ostream* outputStream = http.getStream();
+    auto outputStream = http.getStream();
 
     try
     {
@@ -235,5 +235,3 @@ void printJsonResult(SQLite::Statement& query, std::ostream& stream, bool isFirs
            << "\"valve1\":"       << query.getColumn(5).getInt()    << ","
            << "\"valve2\":"       << query.getColumn(6).getInt()    << "}";
 }
-
-
