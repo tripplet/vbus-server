@@ -3,10 +3,10 @@ dist: bionic
 language: cpp
 compiler: [clang, gcc]
 
-install: if [ "$CXX" = "g++" ]; then export CXX="g++-7.4" CC="gcc-7.4"; fi
+install: if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
 addons:
   apt:
     sources: [ubuntu-toolchain-r-test]
-    packages: [gcc-7.4, g++-7.4, clang, cmake, zlib1g-dev]
+    packages: [gcc-7, g++-7, clang, cmake, zlib1g-dev]
 before_script: cmake .
 script: make
