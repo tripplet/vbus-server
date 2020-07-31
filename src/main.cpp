@@ -9,6 +9,7 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 
 #include "httphandler.hpp"
+#include "gitversion.hpp"
 
 #if !defined(DB_PATH)
     #define DB_PATH "/srv/http/data/vbus.sqlite"
@@ -58,6 +59,16 @@ protected:
 
 int main(int argc, char const *argv[])
 {
+    for (size_t idx = 1; idx < argc; idx++)
+    {
+        auto arg = std::string(argv[idx]);
+        if (arg == "-v" || arg == "--version")
+        {
+            std::cout << GitMetadata::Version() << std::endl;
+            return 0;
+        }
+    }
+    
     // Set decimal seperator to '.'
     std::cout.imbue(std::locale(std::cout.getloc(), new punct_facet()));
 
