@@ -3,6 +3,13 @@ include(ExternalProject)
 
 PROJECT(vbus-server)
 
+
+# Define the two required variables before including
+# the source code for watching a git repository.
+set(PRE_CONFIGURE_FILE "src/gitversion.cpp.in")
+set(POST_CONFIGURE_FILE "src/gitversion.cpp")
+include(git_watcher.cmake)
+
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g")

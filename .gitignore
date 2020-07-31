@@ -1,6 +1,9 @@
 build/
 build_debug/
 
+# Ignore generated git version file
+src/gitversion.cpp
+
 web/vbus-server.cgi
 
 .DS_Store
