@@ -64,7 +64,7 @@ int main(int argc, char const *argv[])
         auto arg = std::string(argv[idx]);
         if (arg == "-v" || arg == "--version")
         {
-            std::cout << GitMetadata::Version() << std::endl;
+            std::cout << "vbus-server " << GitMetadata::Version() << std::endl;
             return 0;
         }
     }
