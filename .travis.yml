@@ -1,8 +1,8 @@
 dist: bionic
-sudo: false
 
 language: cpp
 compiler: [clang, gcc]
+
 install: if [ "$CXX" = "g++" ]; then export CXX="g++-7.4" CC="gcc-7.4"; fi
 addons:
   apt:
