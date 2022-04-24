@@ -9,6 +9,8 @@
 
 Data capturing is done by [vbus-collector](https://github.com/tripplet/vbus-collector)
 
+**The easiest way to use this project if Homeassistant is already used is to install the Addon [Hassio VBUS](https://github.com/tripplet/hassio-vbus)**
+
 ## Used libraries
 * [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
 * [uriparser](http://uriparser.sourceforge.net/)
