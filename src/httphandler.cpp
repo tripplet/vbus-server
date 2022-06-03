@@ -9,7 +9,7 @@
 #include "httphandler.hpp"
 
 #if !defined(BROTLI_SUPPORT)
-    #define BROTLI_SUPPORT 1
+    #define BROTLI_SUPPORT 0
 #endif
 
 
@@ -35,11 +35,14 @@ void HttpHandler::sendHeader()
                       "Expires: 0\r\n"
                       "Access-Control-Allow-Origin: *\r\n";
 
+    #if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         this->response << "Content-Encoding: br\r\n";
     }
-    else if (this->encoding == Encoding::Gzip)
+    else
+    #endif 
+    if (this->encoding == Encoding::Gzip)
     {
         this->response << "Content-Encoding: gzip\r\n";
     }
@@ -73,11 +76,14 @@ void HttpHandler::process()
         return;
     }
 
+    #if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         this->BrotliProcess();
     }
-    else if (this->encoding == Encoding::Gzip)
+    else 
+    #endif
+    if (this->encoding == Encoding::Gzip)
     {
         this->GzipProcess();
     }
@@ -90,16 +96,20 @@ void HttpHandler::flush()
         return;
     }
 
+    #if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         BrotliFlush();
     }
-    else if (this->encoding == Encoding::Gzip)
+    else 
+    #endif 
+    if (this->encoding == Encoding::Gzip)
     {
         GzipFlush();
     }
 }
 
+#if BROTLI_SUPPORT == 1
 void HttpHandler::BrotliProcess()
 {
     assert(this->buffer_stream->str().length() < COMPRESSION_BUFFER_SIZE);
@@ -140,6 +150,7 @@ void HttpHandler::BrotliFlush()
         this->brotli_next_out = this->brotli_out;
     } while (BrotliEncoderHasMoreOutput(this->brotli));
 }
+#endif
 
 void HttpHandler::GzipProcess()
 {
@@ -220,12 +231,17 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
         enc = trimAndLower(std::strtok(NULL, " "));
     }
 
+
+    #if BROTLI_SUPPORT == 1
     if (encodings.find(Encoding::Brotli) != encodings.end())
     {
         // Prefer brotli over gzip
         this->encoding = Encoding::Brotli;
     }
-    else if (encodings.find(Encoding::Gzip) != encodings.end())
+    else 
+    #endif
+
+    if (encodings.find(Encoding::Gzip) != encodings.end())
     {
         this->encoding = Encoding::Gzip;
     }
@@ -235,6 +251,7 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
         this->buffer_stream = new std::ostringstream();
     }
 
+    #if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         // Init brotli
@@ -251,7 +268,9 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
         BrotliEncoderSetParameter(this->brotli, BROTLI_PARAM_MODE, BROTLI_MODE_TEXT);
         BrotliEncoderSetParameter(this->brotli, BROTLI_PARAM_QUALITY, 2);
     }
-    else if (this->encoding == Encoding::Gzip)
+    else 
+    #endif
+    if (this->encoding == Encoding::Gzip)
     {
         // Init GZIP
         this->buffer = new uint8_t[2 * COMPRESSION_BUFFER_SIZE];

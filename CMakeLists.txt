@@ -45,11 +45,16 @@ SET(URIPARSER_BUILD_TOOLS OFF CACHE BOOL "")
 # Add libraries
 include_directories(SQLiteCpp/include/)
 include_directories(uriparser/include/)
-include_directories(brotli/c/include/)
 
 add_subdirectory(SQLiteCpp)
 add_subdirectory(uriparser)
-add_subdirectory(brotli)
+
+IF (DEFINED BROTLI_SUPPORT AND $BROTLI_SUPPORT EQUAL 1)
+  include_directories(brotli/c/include/)
+  add_subdirectory(brotli)
+  set(BROTLI_TARGET_LINK brotlienc-static brotlicommon-static)
+  set(BROTLI_DEPENDENCY brotli)
+ENDIF()
 
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -58,6 +63,6 @@ find_package(ZLIB REQUIRED)
 add_subdirectory(src)
 
 add_executable(vbus-server ${SOURCES})
-target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser brotlienc-static brotlicommon-static z Threads::Threads ${CMAKE_DL_LIBS})
-add_dependencies(vbus-server SQLiteCpp brotli uriparser)
+target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser ${BTORLI_TARTET_LINK} z Threads::Threads ${CMAKE_DL_LIBS})
+add_dependencies(vbus-server SQLiteCpp ${BROTLI_DEPENDENCY} uriparser)
 add_custom_command(TARGET vbus-server POST_BUILD COMMAND cp "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/vbus-server.cgi")
