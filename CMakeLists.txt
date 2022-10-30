@@ -8,7 +8,9 @@ set(PRE_CONFIGURE_FILE "src/gitversion.cpp.in")
 set(POST_CONFIGURE_FILE "src/gitversion.cpp")
 include(git_watcher.cmake)
 
-set(CMAKE_CXX_STANDARD 11)
+# specify the C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
