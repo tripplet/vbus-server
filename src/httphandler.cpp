@@ -12,7 +12,6 @@
     #define BROTLI_SUPPORT 0
 #endif
 
-
 HttpHandler::HttpHandler(const char *accept_encoding, const char *request_uri, std::ostream &resp) : response(resp)
 {
     this->prepareEncoding(accept_encoding);
@@ -35,13 +34,13 @@ void HttpHandler::sendHeader()
                       "Expires: 0\r\n"
                       "Access-Control-Allow-Origin: *\r\n";
 
-    #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         this->response << "Content-Encoding: br\r\n";
     }
     else
-    #endif 
+#endif
     if (this->encoding == Encoding::Gzip)
     {
         this->response << "Content-Encoding: gzip\r\n";
@@ -63,8 +62,8 @@ inline std::string HttpHandler::trimAndLower(const char *input)
         return std::isspace(c);
     });
     auto wsback = std::find_if_not(input_str.rbegin(), input_str.rend(), [](int c) {
-                      return std::isspace(c);
-                  }).base();
+        return std::isspace(c);
+    }).base();
 
     return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }
@@ -76,13 +75,13 @@ void HttpHandler::process()
         return;
     }
 
-    #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         this->BrotliProcess();
     }
-    else 
-    #endif
+    else
+#endif
     if (this->encoding == Encoding::Gzip)
     {
         this->GzipProcess();
@@ -96,13 +95,13 @@ void HttpHandler::flush()
         return;
     }
 
-    #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         BrotliFlush();
     }
-    else 
-    #endif 
+    else
+#endif
     if (this->encoding == Encoding::Gzip)
     {
         GzipFlush();
@@ -218,28 +217,28 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
     while (!enc.empty())
     {
         if (enc == "gzip")
-        {   
+        {
             encodings.insert(Encoding::Gzip);
         }
         else if (enc == "br")
         {
-            #if BROTLI_SUPPORT == 1
-                encodings.insert(Encoding::Brotli);
-            #endif
+#if BROTLI_SUPPORT == 1
+            encodings.insert(Encoding::Brotli);
+#endif
         }
 
         enc = trimAndLower(std::strtok(NULL, " "));
     }
 
 
-    #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
     if (encodings.find(Encoding::Brotli) != encodings.end())
     {
         // Prefer brotli over gzip
         this->encoding = Encoding::Brotli;
     }
-    else 
-    #endif
+    else
+#endif
 
     if (encodings.find(Encoding::Gzip) != encodings.end())
     {
@@ -251,7 +250,7 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
         this->buffer_stream = new std::ostringstream();
     }
 
-    #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
     if (this->encoding == Encoding::Brotli)
     {
         // Init brotli
@@ -268,8 +267,8 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
         BrotliEncoderSetParameter(this->brotli, BROTLI_PARAM_MODE, BROTLI_MODE_TEXT);
         BrotliEncoderSetParameter(this->brotli, BROTLI_PARAM_QUALITY, 2);
     }
-    else 
-    #endif
+    else
+#endif
     if (this->encoding == Encoding::Gzip)
     {
         // Init GZIP

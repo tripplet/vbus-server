@@ -1,8 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
-include(ExternalProject)
 
 PROJECT(vbus-server)
-
 
 # Define the two required variables before including
 # the source code for watching a git repository.
@@ -14,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -flto")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto")
 
 IF (DEFINED DB_PATH)
     ADD_COMPILE_DEFINITIONS(DB_PATH="${DB_PATH}")
@@ -49,7 +47,7 @@ include_directories(uriparser/include/)
 add_subdirectory(SQLiteCpp)
 add_subdirectory(uriparser)
 
-IF (DEFINED BROTLI_SUPPORT AND $BROTLI_SUPPORT EQUAL 1)
+IF (DEFINED BROTLI_SUPPORT AND BROTLI_SUPPORT EQUAL 1)
   include_directories(brotli/c/include/)
   add_subdirectory(brotli)
   set(BROTLI_TARGET_LINK brotlienc-static brotlicommon-static)
@@ -63,6 +61,8 @@ find_package(ZLIB REQUIRED)
 add_subdirectory(src)
 
 add_executable(vbus-server ${SOURCES})
-target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser ${BTORLI_TARTET_LINK} z Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(vbus-server SQLiteCpp sqlite3 uriparser ${BROTLI_TARGET_LINK} z Threads::Threads ${CMAKE_DL_LIBS})
 add_dependencies(vbus-server SQLiteCpp ${BROTLI_DEPENDENCY} uriparser)
+
+# Copy output binary to web/vbus-server.cgi
 add_custom_command(TARGET vbus-server POST_BUILD COMMAND cp "$<TARGET_FILE:vbus-server>" "${CMAKE_SOURCE_DIR}/web/vbus-server.cgi")

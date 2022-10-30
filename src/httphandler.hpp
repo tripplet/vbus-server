@@ -7,7 +7,10 @@
 #include <unordered_map>
 
 #include <zlib.h>
-#include <brotli/encode.h>
+
+#if BROTLI_SUPPORT == 1
+    #include <brotli/encode.h>
+#endif
 
 #define COMPRESSION_BUFFER_SIZE (128 * 1024)
 
@@ -17,10 +20,10 @@ class HttpHandler
         typedef enum {
             None,
             Gzip,
-            
-            #if BROTLI_SUPPORT == 1
+
+#if BROTLI_SUPPORT == 1
             Brotli
-            #endif
+#endif
         } Encoding;
 
     private:
@@ -32,7 +35,7 @@ class HttpHandler
 
         uint8_t* buffer = nullptr;
 
-        #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
         // brotli
         BrotliEncoderState* brotli;
         uint8_t* brotli_in;
@@ -41,7 +44,7 @@ class HttpHandler
         const uint8_t* brotli_next_in;
         size_t brotli_available_out;
         uint8_t* brotli_next_out;
-        #endif
+#endif
 
         // gzip/deflate
         z_stream zlib;
@@ -52,11 +55,11 @@ class HttpHandler
 
         void setContentType(const char *type) { this->content_type = new std::string(type); }
         void sendHeader();
-        bool isCompressionActive() { 
-                return 
-                #if BROTLI_SUPPORT == 1
-                this->encoding == Encoding::Brotli || 
-                #endif
+        bool isCompressionActive() {
+                return
+#if BROTLI_SUPPORT == 1
+                this->encoding == Encoding::Brotli ||
+#endif
                 this->encoding == Encoding::Gzip; }
         std::ostream* getStream();
         void process();
@@ -70,10 +73,10 @@ class HttpHandler
         void parseURL(const char* request_uri);
         void prepareEncoding(const char* accept_encoding);
 
-        #if BROTLI_SUPPORT == 1
+#if BROTLI_SUPPORT == 1
         void BrotliProcess();
         void BrotliFlush();
-        #endif
+#endif
 
         void GzipProcess();
         void GzipFlush();
