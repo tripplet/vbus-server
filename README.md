@@ -11,14 +11,10 @@ Data capturing is done by [vbus-collector](https://github.com/tripplet/vbus-coll
 
 **The easiest way to use this project if Homeassistant is already used is to install the Addon [Hassio VBUS](https://github.com/tripplet/hassio-vbus)**
 
-## Used libraries
-* [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
-* [uriparser](http://uriparser.sourceforge.net/)
-
 ## Docker image
 https://hub.docker.com/r/ttobias/vbus-server/
 
-## HowTo build
+## How to setup
 The RaspberryPi or other linux machine should be running and connected to the internet, ssh sould be available.
 Also vbus-collector should be running.
 
@@ -26,104 +22,140 @@ Also vbus-collector should be running.
 
 Get the necessary packages (raspbian)
 ```shell
-$ apt-get update
-$ apt-get install git build-essential cmake libsqlite3-dev
+apt-get update
+apt-get install git build-essential cmake libsqlite3-dev
 ```
 
 Get the necessary packages (archlinux-arm)
 ```shell
-$ pacman -Syu
-$ pacman -S git base-devel cmake libsqlite3-dev sqlite
+pacman -Syu
+pacman -S git base-devel cmake libsqlite3-dev sqlite
 ```
 
 Download the source code
 ```shell
-$ mkdir -p /opt/vbus
-$ cd /opt/vbus
-$ git clone --recurse-submodules https://github.com/tripplet/vbus-server.git server
+mkdir -p /srv/vbus
+cd /srv/vbus
+git clone --recurse-submodules https://github.com/tripplet/vbus-server.git server
 ```
 
 Compile the data visualization service
 ```shell
-$ mkdir -p /opt/vbus/server/build
-$ cd /opt/vbus/server/build
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-$ make
-$ ln -s /opt/vbus/server/build/vbus-server /opt/vbus/server/web/
+mkdir -p /srv/vbus/server/build
+cd /srv/vbus/server/build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+nice make
+ln -s /srv/vbus/server/build/vbus-server /srv/vbus/server/web/
 ```
 
-## Configure lighttpd or any other webserver with cgi support
+## Configure nginx or any other webserver with cgi support
 
 #### :warning: Warning
 > This is a very basic setting without authentication and https (only for internal home network).
 > It should not be made accessible from the internet
 
 
-Install lighttpd (raspbian)
+Install nginx (raspbian)
 ```shell
-$ apt-get install lighttpd
+apt-get install nginx fcgiwrap
 ```
 
-Install lighttpd (archlinux-arm)
+Install nginx (archlinux-arm)
 ```shell
-$ pacman -S lighttpd
+pacman -S nginx-mainline fcgiwrap
 ```
 
 Add vbus-server directory to webspace root
 
 ```shell
-$ mkdir -p /srv/http/htdocs
-$ mkdir -p /srv/http/data
-$ chown -R http:http /srv/http
-$ ln -s /opt/vbus/collector/data.db /srv/http/data/vbus.sqlite
-$ ln -s /opt/vbus/server/web /srv/http/htdocs/heating
+mkdir -p /srv/http/htdocs
+mkdir -p /srv/http/data
+chown -R http:http /srv/http
+ln -s /srv/vbus/collector/data.db /srv/http/data/vbus.sqlite
+ln -s /srv/vbus/server/web /srv/http/htdocs/heating
 ```
 
-On raspbian the lighttpd user is `www-data`
+On raspbian the nginx user is `www-data`
 ```
-$ chown -R www-data:www-data /srv/http
+chown -R www-data:www-data /srv/http
 ```
 
-Example lighttpd config
+
+<details>
+  <summary>Example nginx configuration</summary>
+
 ```cfg
-# lighttpd config
+# nginx config
 
-var.config_dir  = "/etc/lighttpd/"
-var.server_root = "/srv/http/"
+user http; # user www-data on raspbian
+worker_processes auto;
+pid /run/nginx.pid;
 
-server.port = 80
-server.username  = "http" # Use www-data on raspbian
-server.groupname = "http" # Use www-data on raspbian
-server.document-root = server_root + "htdocs"
-server.errorlog      = "/var/log/lighttpd/error.log"
+error_log /var/log/nginx/error.log;
 
-dir-listing.activate = "enable"
-dir-listing.encoding = "utf-8"
+events {
+    worker_connections 1024;
+}
 
-index-file.names  = ( "index.html", "index.htm" )
-mimetype.assign   = ( ".html" => "text/html",
-                      ".htm"  => "text/html",
-                      ".txt"  => "text/plain",
-                      ".css"  => "text/css",
-                      ".js"   => "application/x-javascript",
-                      ".jpg"  => "image/jpeg",
-                      ".svg"  => "image/svg+xml",
-                      ".jpeg" => "image/jpeg",
-                      ".gif"  => "image/gif",
-                      ".png"  => "image/png",
-                      ""      => "application/octet-stream" )
-# Modules
-server.modules += ( "mod_cgi" )
+http {
+    include mime.types;
+    default_type application/octet-stream;
 
-# CGI
-cgi.assign        = ( "/vbus-server" => "" )
+    charset utf-8;
+    index index.html index.htm;
+
+    proxy_buffering off;
+    client_max_body_size 0;
+    fastcgi_buffers 64 4K;
+    types_hash_max_size 4096;
+    sendfile on;
+    tcp_nopush  on;
+    tcp_nodelay on;
+    aio threads;
+    server_tokens off;
+
+    gzip on;
+    gzip_types application/javascript text/css;
+
+    server {
+        listen 80 deferred default_server;
+        listen [::]:80 deferred default_server;
+        server_name _;
+
+        root /srv/http/htdocs;
+
+        location / {
+            autoindex on;
+            autoindex_exact_size off;
+
+            try_files $uri $uri/ =404;
+        }
+
+        location ~ ^(/heating/vbus-server\.cgi)(.*)$ {
+            try_files $uri =404;
+            include fastcgi.conf;
+
+            fastcgi_split_path_info  ^(.+\.cgi)(.*)$;
+            fastcgi_pass unix:/run/fcgiwrap.sock; # must be unix:/run/fcgiwrap.socket on raspbian
+        }
+    }
+}
 ```
+</details>
 
-Enable and start the lighttpd server (only works with installed systemd)
+Enable and start the nginx server and fastcgi wrapper
 ```shell
-$ systemctl enable lighttpd
-$ systemctl start lighttpd
+systemctl enable nginx
+systemctl start nginx
+systemctl enable fcgiwrap
 ```
+
+Very that vbus-server cgi is working by executing:
+```shell
+curl "http://localhost/heating/vbus-server.cgi?timespan=current&format=json"
+```
+
+The response should contain the current timestamp and data.
 
 Access the website via `http://ip-of-your-raspberrypi/heating`
 By default the last 12 hours are rendered, if more history is desired change the url according to this format:
@@ -170,3 +202,7 @@ For a list of supported values see: https://www.sqlite.org/lang_datefunc.html
   }
   ```
     
+## Used libraries
+* [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
+* [uriparser](http://uriparser.sourceforge.net/)
+* [brotli](https://github.com/google/brotli/)
