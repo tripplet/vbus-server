@@ -41,10 +41,9 @@ git clone --recurse-submodules https://github.com/tripplet/vbus-server.git serve
 
 Compile the data visualization service
 ```shell
-mkdir -p /srv/vbus/server/build
-cd /srv/vbus/server/build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-nice make
+cd /srv/vbus/server/
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+nice cmake --build build --parallel
 ln -s /srv/vbus/server/build/vbus-server /srv/vbus/server/web/
 ```
 
@@ -175,7 +174,7 @@ For a list of supported values see: https://www.sqlite.org/lang_datefunc.html
   ```
   {"data":
     [
-      {"timestamp":"2018-07-08 11:13:01", 
+      {"timestamp":"2018-07-08 11:13:01",
         "temp1":21.9,
         "temp2":20.9,
         "temp3":23.1,
@@ -201,7 +200,7 @@ For a list of supported values see: https://www.sqlite.org/lang_datefunc.html
    "temp4": {"min": 17.9, "max": 74.4}
   }
   ```
-    
+
 ## Used libraries
 * [SQLiteC++](http://srombauts.github.io/SQLiteCpp/)
 * [uriparser](http://uriparser.sourceforge.net/)

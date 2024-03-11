@@ -52,7 +52,7 @@ add_subdirectory(uriparser)
 IF (DEFINED BROTLI_SUPPORT AND BROTLI_SUPPORT EQUAL 1)
   include_directories(brotli/c/include/)
   add_subdirectory(brotli)
-  set(BROTLI_TARGET_LINK brotlienc-static brotlicommon-static)
+  set(BROTLI_TARGET_LINK brotlienc)
   set(BROTLI_DEPENDENCY brotli)
 ENDIF()
 
