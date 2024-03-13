@@ -227,23 +227,21 @@ void HttpHandler::prepareEncoding(const char *accept_encoding)
 #endif
         }
 
-        enc = trimAndLower(std::strtok(NULL, " "));
+        enc = trimAndLower(std::strtok(NULL, ","));
     }
 
+    if (encodings.contains(Encoding::Gzip))
+    {
+        this->encoding = Encoding::Gzip;
+    }
 
 #if BROTLI_SUPPORT == 1
-    if (encodings.find(Encoding::Brotli) != encodings.end())
+    if (encodings.contains(Encoding::Brotli))
     {
         // Prefer brotli over gzip
         this->encoding = Encoding::Brotli;
     }
-    else
 #endif
-
-    if (encodings.find(Encoding::Gzip) != encodings.end())
-    {
-        this->encoding = Encoding::Gzip;
-    }
 
     if (isCompressionActive())
     {
