@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <locale>
 #include <unordered_set>
+#include <cstdint>
 
 #include <uriparser/Uri.h>
 
