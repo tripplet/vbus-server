@@ -12,7 +12,7 @@
 #include "gitversion.hpp"
 
 #if !defined(DB_PATH)
-    #define DB_PATH "/srv/http/data/vbus.sqlite"
+    #define DB_PATH "/srv/vbus/collector/data.db"
 #endif
 
 #define CSV_HEADER "Datum,Ofen,Speicher-unten,Speicher-oben,Heizung,Ventil-Ofen,Ventil-Heizung"
